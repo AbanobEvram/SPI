@@ -1,0 +1,171 @@
+module SPI_tb();
+//Signals Declaration
+reg MOSI,SS_n,clk,rst_n; 
+wire MISO;
+//DUT Instantiation
+Maindesign DUT(MOSI,SS_n,clk,rst_n,MISO);
+//Clock Generation
+initial begin
+	clk = 0;
+	forever 
+		#1 clk = ~clk;
+end
+integer i=0;
+
+initial begin
+	$readmemh("mem.dat",DUT.RAM.mem);
+	
+	$display("Activate reset");
+	rst_n=0;SS_n=1;MOSI=0;
+	@(negedge clk);
+
+	rst_n=1;
+	$display("Case1 :Test Write Address");
+		SS_n=0;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+		//start write first 8 bits
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		//Note the rx_data will be 10'b00_111_00_111
+		$display("rx_data = %b",DUT.spi.rx_data);
+
+		SS_n=1;
+		@(negedge clk);
+
+		$display("Case2 :Test Write Data");
+		SS_n=0;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		//start write first 8 bits
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		//Note the rx_data will be 10'b0101_0101 and the next clock cycle will be written in MEM
+		$display("rx_data = %b",DUT.spi.rx_data);
+
+		SS_n=1;
+		@(negedge clk);
+
+		$display("Case3 :Test Read Address");
+		SS_n=0;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		MOSI=0;
+		@(negedge clk);
+
+		//start write first 8 bits
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		//Note the rx_data will be 10'b10_0000_0011,Address : 8'b0000_0011
+		$display("rx_data = %b",DUT.spi.rx_data);
+
+		SS_n=1;
+		@(negedge clk);
+
+		$display("Case4 :Test Read data");
+		SS_n=0;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		MOSI=1;
+		@(negedge clk);
+
+		//Not important input
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=0;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		MOSI=1;
+		@(negedge clk);
+		//Note The data in address:8'b0000_0011 = FE then MISO will be:1_1_1_1_1_1_1_0
+		repeat(8) 
+		@(negedge clk);
+		$display("tx_data = %b",DUT.spi.tx_data);
+		SS_n=1;
+		@(negedge clk);
+	$stop;
+end 
+initial begin
+    $monitor("MOSI = %b, MISO = %b, SS_n = %b ",MOSI, MISO, SS_n);
+end
+endmodule
