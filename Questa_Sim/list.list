@@ -1,0 +1,5 @@
+../RTL/mem.dat
+../RTL/RAM.v
+../RTL/SPI.v
+../RTL/Maindesign.v
+../RTL/SPI_tb.v
